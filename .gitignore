@@ -1,0 +1,6 @@
+node_modules/
+*.pdf
+def-*.jpg
+tmpl-*.jpg
+verify.pptx
+defense.pptx
