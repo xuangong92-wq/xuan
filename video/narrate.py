@@ -8,31 +8,26 @@ VO = os.path.join(SCR, "voices")
 SR = 44100
 TOTAL = 47.1
 NARRATOR = sys.argv[1] if len(sys.argv) > 1 else "en_US-lessac-high"
+MUSIC_LEVEL = 0.2   # soft background bed under the English voice
 
 # (start seconds, voice, text)  N = English narrator, P = Brazilian Portuguese voice
 LINES = [
     (0.7,  "N", "Saturday noon, by the Red Sea."),
     (3.1,  "N", "My Brazilian friends invited me over for lunch."),
     (6.2,  "N", "And this... is the real boss of the house. Super cute, right?"),
-    (9.7,  "P", "Almoço."),
-    (10.7, "N", "That's lunch, in Portuguese."),
+    (9.9,  "N", "Lunch, Brazilian style."),
     (12.6, "N", "They cooked me a really local Brazilian lunch."),
-    (16.0, "P", "Arroz."),
-    (16.9, "N", "Rice."),
-    (18.6, "P", "Feijão."),
-    (19.4, "N", "Beans. Every single day."),
-    (21.1, "P", "Farofa."),
-    (21.9, "N", "Toasted cassava flour. So crunchy!"),
-    (23.7, "P", "O prato."),
-    (24.6, "N", "Simple, but so Brazilian."),
-    (27.1, "P", "Cafezinho."),
-    (28.1, "N", "A little coffee, after lunch."),
+    (16.1, "N", "Rice."),
+    (18.6, "N", "Beans. Every single day."),
+    (21.1, "N", "And farofa. Toasted cassava flour. So crunchy!"),
+    (23.8, "N", "Put it all together. Simple, but so Brazilian."),
+    (27.1, "N", "And a little coffee, after lunch."),
     (29.8, "N", "Their home is full of little treasures,"),
     (32.0, "N", "a whole wall of places they've been,"),
     (34.8, "N", "Istanbul, Madrid, Bahia,"),
     (37.1, "N", "and a painting of the two of them."),
     (40.2, "N", "Far from home... you can still find a meal that feels like home."),
-    (44.2, "P", "Obrigado!"),
+    (44.2, "N", "Thank you, my friends."),
 ]
 
 def resample(x, sr_in):
@@ -151,11 +146,11 @@ mus /= np.abs(mus).max() + 1e-9
 # duck music under the voice
 envv = np.abs(voice); k = int(0.25 * SR)
 envv = np.convolve(envv, np.ones(k, np.float32) / k, mode="same")
-duck = 1 - 0.55 * np.clip(envv / 0.04, 0, 1)
+duck = 1 - 0.6 * np.clip(envv / 0.04, 0, 1)
 k2 = int(0.15 * SR); duck = np.convolve(duck, np.ones(k2) / k2, mode="same").astype(np.float32)
 fade = np.ones(n, np.float32); fade[:int(1.2 * SR)] = np.linspace(0, 1, int(1.2 * SR))
 fade[-int(3 * SR):] = np.linspace(1, 0, int(3 * SR)) ** 1.5
-mix = mus * 0.42 * duck * fade + voice * 0.9
+mix = mus * MUSIC_LEVEL * duck * fade + voice * 0.9
 mix /= np.abs(mix).max() + 1e-9; mix *= 0.89
 stereo = np.stack([mix, mix], -1)
 out = os.path.join(SCR, f"mix_{NARRATOR}.wav")
